@@ -98,7 +98,7 @@ fun main() {
         fmi2_import_exit_initialization_mode(fmi)
 
         val altezza: CPointer<fmi2_import_variable_t> = fmi2_import_get_variable_by_name(fmi, "h")
-            ?: error("vaffanculo")
+            ?: error("error")
         val vrAltezza: fmi2_value_reference_t = fmi2_import_get_variable_vr(altezza)
 
     val vrArray = allocArray<fmi2_value_reference_tVar>(1)
@@ -118,6 +118,7 @@ fun main() {
     while (time < 3.0) {
 
         fmi2_import_do_step(
+
             fmi,
             time,
             step,
