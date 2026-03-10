@@ -21,7 +21,7 @@ enum class DLLSTATUS {
 class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable {
     var context: CPointer<fmi_import_context_t>? = fmi_import_allocate_context(null)
     var fmi: CPointer<cnames.structs.fmi2_import_t>? = null
-    var fmuInfo: FmuInfo = getInfo()
+    var fmuInfo: FmuInfo
     val dllStatus: DLLSTATUS
     var experimentInstance: Int? = null
     var simulationConfig: SimulationConfig? = null
@@ -33,17 +33,10 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
             resources
         )
         this.fmi = fmi2_import_parse_xml(context, resources, null)
-        val dllLoadingResult = fmi2_import_create_dllfmu(
-            fmi,
-            2.toUInt(),
-            null
-        )
+        fmuInfo = getInfo()
 
-        dllStatus = if (dllLoadingResult == 0) {
-            DLLSTATUS.OK
-        } else {
-            DLLSTATUS.ERROR
-        }
+        val dllResult = fmi2_import_create_dllfmu(fmi, 2.toUInt(), null)
+        dllStatus = if (dllResult == 0) DLLSTATUS.OK else DLLSTATUS.ERROR
     }
 
     private fun getInfo(): FmuInfo {
@@ -146,7 +139,7 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
 
         val stopTime: Double = simulationConfig!!.stopTime
             ?: fmuInfo.defaultExperimentStop
-        val step: Double = simulationConfig!!.stepSize ?: fmuInfo.defaultExperimentStep
+        val step: Double = simulationConfig!!.stepSize
         var time = config.startTime
 
         // Determina quali variabili leggere
@@ -167,12 +160,13 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
                 fmi2_import_get_variable_vr(variable)
             }
 
-            val vrArray = allocArray<fmi2_value_reference_tVar>(1)
+            val n = variablesToRead.size
+            val vrArray = allocArray<fmi2_value_reference_tVar>(n)
+            val valueArray = allocArray<DoubleVar>(n)
+
             variablesToRead.forEachIndexed { i, varName ->
                 vrArray[i] = vrMap[varName]!!
             }
-
-            val valueArray = allocArray<DoubleVar>(1)
 
 
             println("---- Simulation Start ----")
@@ -182,7 +176,7 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
                 fmi2_import_do_step(
                     fmi,
                     time,
-                    simulationConfig!!.stepSize,
+                    step,
                     fmi2_true.toInt()
                 )
 

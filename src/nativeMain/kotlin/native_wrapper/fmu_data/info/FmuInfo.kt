@@ -1,5 +1,8 @@
 package native_wrapper.fmu_data.info
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class FmuInfo(
     val modelName: String?,
     val description: String?,

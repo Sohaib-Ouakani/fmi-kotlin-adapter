@@ -26,7 +26,7 @@ fun getWorkingDir(): String {
 
 
 @OptIn(ExperimentalForeignApi::class)
-fun main() {
+fun nonmain() {
     memScoped {
         val workDir = getWorkingDir()
         val resources = "$workDir/resources"

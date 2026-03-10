@@ -46,6 +46,11 @@ kotlin {
     sourceSets {
         nativeMain.dependencies {
             implementation(libs.kotlinxSerializationJson)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.cio)
+            implementation(libs.ktor.server.host.common)
+            implementation(libs.ktor.server.content.negotiation)
         }
     }
 }
