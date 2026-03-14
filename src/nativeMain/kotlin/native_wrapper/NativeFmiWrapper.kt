@@ -13,7 +13,7 @@ import native_wrapper.fmu_data.info.FmuInfo
 import native_wrapper.simulation.config.SimulationConfig
 import native_wrapper.simulation.results.SimulationResult
 
-enum class DLLSTATUS {
+enum class DLL_STATUS {
     OK, ERROR
 }
 
@@ -22,7 +22,7 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
     var context: CPointer<fmi_import_context_t>? = fmi_import_allocate_context(null)
     var fmi: CPointer<cnames.structs.fmi2_import_t>? = null
     var fmuInfo: FmuInfo
-    val dllStatus: DLLSTATUS
+    val dllStatus: DLL_STATUS
     var experimentInstance: Int? = null
     var simulationConfig: SimulationConfig? = null
 
@@ -35,8 +35,8 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
         this.fmi = fmi2_import_parse_xml(context, resources, null)
         fmuInfo = getInfo()
 
-        val dllResult = fmi2_import_create_dllfmu(fmi, 2.toUInt(), null)
-        dllStatus = if (dllResult == 0) DLLSTATUS.OK else DLLSTATUS.ERROR
+        val dllResult = fmi2_import_create_dllfmu(fmi, fmi_version_2_0_enu, null)
+        dllStatus = if (dllResult == 0) DLL_STATUS.OK else DLL_STATUS.ERROR
     }
 
     private fun getInfo(): FmuInfo {
@@ -183,7 +183,7 @@ class NativeFmiWrapper(val path: String, val resources: String) : AutoCloseable 
                 fmi2_import_get_real(
                     fmi,
                     vrArray,
-                    1.toULong(),
+                    n.toULong(),
                     valueArray
                 )
 

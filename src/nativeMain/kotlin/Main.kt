@@ -9,12 +9,14 @@ import kotlinx.cinterop.set
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.usePinned
 import libfmi.*
+import model.fmu.Fmu
+import platform.posix.`false`
 import platform.posix.getcwd
+import platform.posix.`true`
 import kotlin.math.round
 
 
 const val FMU_PATH = "./resources/BouncingBall.fmu"
-
 
 @OptIn(ExperimentalForeignApi::class)
 fun getWorkingDir(): String {
@@ -26,7 +28,7 @@ fun getWorkingDir(): String {
 
 
 @OptIn(ExperimentalForeignApi::class)
-fun nonmain() {
+fun main() {
     memScoped {
         val workDir = getWorkingDir()
         val resources = "$workDir/resources"
@@ -69,7 +71,7 @@ fun nonmain() {
         //caricamento DLL
         val dllResult = fmi2_import_create_dllfmu(
             fmi,
-            2.toUInt(),
+            fmi_version_2_0_enu,
             null
         )
         val errMsg = fmi2_import_get_last_error(fmi)?.toKString()
@@ -79,7 +81,7 @@ fun nonmain() {
         }
 
         //instanziamento
-        val instance = fmi2_import_instantiate(fmi, "experiment1", fmi2_type_t.fmi2_cosimulation, null, fmi2_false.toInt())
+        val instance = fmi2_import_instantiate(fmi, "experiment1", fmi2_type_t.fmi2_cosimulation, null, `false`)
         check(instance == 0) {
             "Errore istanziamento: ${fmi2_import_get_last_error(fmi)?.toKString()}"
         }
@@ -87,10 +89,10 @@ fun nonmain() {
         //set-up valori esperimento
         fmi2_import_setup_experiment(
             fmi,
-            fmi2_false.toInt(),
+            `false`,
             0.0,
             0.0,
-            fmi2_false.toInt(),
+            `false`,
             0.0
         )
 
@@ -122,7 +124,7 @@ fun nonmain() {
             fmi,
             time,
             step,
-            fmi2_true.toInt()
+            `true`
         )
 
         fmi2_import_get_real(
