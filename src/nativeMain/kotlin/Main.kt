@@ -39,6 +39,9 @@ fun main() {
             FMU_PATH,
             resources
         )
+        if (version == fmi_version_2_0_enu) {
+            println("yeeeeeee")
+        }
         val characteristics: MutableMap<String, String?> = mutableMapOf()
 
         val fmi = fmi2_import_parse_xml(context, resources, null)
@@ -87,14 +90,19 @@ fun main() {
         }
 
         //set-up valori esperimento
-        fmi2_import_setup_experiment(
+        if (fmi2_import_setup_experiment(
             fmi,
             `false`,
             0.0,
             0.0,
             `false`,
             0.0
-        )
+        ) != fmi2_status_t.fmi2_status_ok)
+        {
+            throw IllegalStateException("Error while setting up the experiment: ${fmi2_import_get_last_error(fmi)?.toKString()}")
+        } else {
+            println("Experiment successfully setup")
+        }
 
         fmi2_import_enter_initialization_mode(fmi)
         fmi2_import_exit_initialization_mode(fmi)
